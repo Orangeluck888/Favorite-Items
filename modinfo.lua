@@ -39,4 +39,91 @@ configuration_options = {
         },
         default = is_chinese and "zh" or "en",
     },
+    {
+        name = "BORDER_COLOR",
+        label = is_chinese and "边框颜色" or "Border Color",
+        hover = is_chinese and "收藏物品外圈边框的颜色" or "The color of the favorite item border",
+        options = {
+            { description = is_chinese and "黄色（默认）" or "Yellow (default)", data = "yellow" },
+            { description = is_chinese and "粉色" or "Pink", data = "pink" },
+            { description = is_chinese and "蓝色" or "Blue", data = "blue" },
+            { description = is_chinese and "绿色" or "Green", data = "green" },
+            { description = is_chinese and "紫色" or "Purple", data = "purple" },
+            { description = is_chinese and "红色" or "Red", data = "red" },
+            { description = is_chinese and "白色" or "White", data = "white" },
+            { description = is_chinese and "青色" or "Cyan", data = "cyan" },
+        },
+        default = "yellow",
+    },
+    {
+        name = "STAR_COLOR",
+        label = is_chinese and "星标覆盖颜色" or "Star Cover Color",
+        hover = is_chinese
+            and "收藏物品星标的颜色（默认黄色底图限制，蓝/紫/白效果较差）"
+            or "The color of the favorite star (Default limited by yellow base image; blue/purple/white may look off)",
+        options = {
+            { description = is_chinese and "黄色（默认）" or "Yellow (default)", data = "yellow" },
+            { description = is_chinese and "粉色" or "Pink", data = "pink" },
+            { description = is_chinese and "橙色" or "Orange", data = "orange" },
+            { description = is_chinese and "红色" or "Red", data = "red" },
+            { description = is_chinese and "绿色" or "Green", data = "green" },
+            { description = is_chinese and "白色" or "White", data = "white" },
+        },
+        default = "yellow",
+    },
+        -- 放在 BORDER_COLOR 和 STAR_COLOR 之后
+    {
+        name = "BORDER_SIZE",
+        label = is_chinese and "边框大小" or "Border Size",
+        hover = is_chinese
+            and "收藏物品外圈边框的大小"
+            or "The size of the favorite item border",
+        options = {
+            { description = is_chinese and "小" or "Small", data = 0.50 },
+            { description = is_chinese and "中（默认）" or "Medium (default)", data = 0.62 },
+            { description = is_chinese and "大" or "Large", data = 0.75 },
+            { description = is_chinese and "特大" or "Extra Large", data = 0.88 },
+        },
+        default = 0.62,
+    },
+    {
+        name = "BORDER_ALPHA",
+        label = is_chinese and "边框透明度" or "Border Opacity",
+        hover = is_chinese
+            and "边框的透明程度（越低越透明）"
+            or "How transparent the border is (lower = more transparent)",
+        options = {
+            { description = "50%", data = 0.5 },
+            { description = "75%", data = 0.75 },
+            { description = is_chinese and "100%（默认）" or "100% (default)", data = 1.0 },
+        },
+        default = 1.0,
+    },
+    {
+        name = "STAR_SIZE",
+        label = is_chinese and "星标大小" or "Star Size",
+        hover = is_chinese
+            and "收藏星标的大小"
+            or "The size of the favorite star",
+        options = {
+            { description = is_chinese and "小" or "Small", data = 0.7 },
+            { description = is_chinese and "中（默认）" or "Medium (default)", data = 0.9 },
+            { description = is_chinese and "大" or "Large", data = 1.1 },
+        },
+        default = 0.9,
+    },
+    {
+        name = "STAR_POS",
+        label = is_chinese and "星标位置" or "Star Position",
+        hover = is_chinese
+            and "星标在槽位中的位置"
+            or "Where the star appears in the slot",
+        options = {
+            { description = is_chinese and "右上（默认）" or "Top-Right (default)", data = "tr" },
+            { description = is_chinese and "左上" or "Top-Left", data = "tl" },
+            { description = is_chinese and "右下" or "Bottom-Right", data = "br" },
+            { description = is_chinese and "左下" or "Bottom-Left", data = "bl" },
+        },
+        default = "tr",
+    },
 }

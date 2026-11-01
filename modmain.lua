@@ -1,4 +1,4 @@
--- 一键 GLOBAL：让当前环境找不到的变量自动去 GLOBAL 里找
+-- 一键 GLOBAL
 GLOBAL.setmetatable(env, {
     __index = function(t, k)
         return GLOBAL.rawget(GLOBAL, k)
@@ -20,7 +20,6 @@ local STRINGS_MOD = {
 		MOVED = " was moved to slot ",
 		FAVORITED = " was favorited on slot ",
 		FAVORITE_HINT = "Favorite",
-		LOCKED = " is locked and cannot be dropped",
 	},
 	zh = {
 		REMOVED = " 已从格子中移除 ",
@@ -28,10 +27,51 @@ local STRINGS_MOD = {
 		MOVED = " 已移动到格子 ",
 		FAVORITED = " 已收藏到格子 ",
 		FAVORITE_HINT = "收藏",
-		LOCKED = " 已锁定，无法丢弃",
 	},
 }
 local S = STRINGS_MOD[LANG] or STRINGS_MOD.en
+
+-- ==================== 边框颜色 ====================
+local COLOR_PRESETS = {
+	yellow = {1, 0.85, 0.2, 1},
+	pink   = {1, 0.45, 0.75, 1},
+	blue   = {0.3, 0.6, 1, 1},
+	green  = {0.3, 1, 0.4, 1},
+	purple = {0.7, 0.3, 1, 1},
+	red    = {1, 0.25, 0.25, 1},
+	white  = {1, 1, 1, 1},
+	cyan   = {0.3, 1, 1, 1},
+}
+local BORDER_COLOR_KEY = GetModConfigData("BORDER_COLOR") or "yellow"
+local BORDER_COLOR = COLOR_PRESETS[BORDER_COLOR_KEY] or COLOR_PRESETS.yellow
+
+-- ==================== 边框大小 / 透明度 ====================
+local BORDER_SIZE = GetModConfigData("BORDER_SIZE") or 0.62
+local BORDER_ALPHA = GetModConfigData("BORDER_ALPHA") or 1.0
+
+-- ==================== 星标颜色 ====================
+local STAR_COLOR_PRESETS = {
+	yellow = {1, 1, 1, 1},
+	pink   = {1, 0.5, 0.9, 1},
+	orange = {1, 0.7, 0, 1},
+	red    = {1, 0.3, 0.1, 1},
+	green  = {0.5, 1, 0.3, 1},
+	white  = {1, 1, 1, 1},
+}
+local STAR_COLOR_KEY = GetModConfigData("STAR_COLOR") or "yellow"
+local STAR_COLOR = STAR_COLOR_PRESETS[STAR_COLOR_KEY] or STAR_COLOR_PRESETS.yellow
+
+-- ==================== 星标大小 / 位置 ====================
+local STAR_SIZE = GetModConfigData("STAR_SIZE") or 0.9
+local STAR_POS_KEY = GetModConfigData("STAR_POS") or "tr"
+
+local STAR_POS = {
+	tr = {18, 18},
+	tl = {-18, 18},
+	br = {18, -18},
+	bl = {-18, -18},
+}
+local star_pos = STAR_POS[STAR_POS_KEY] or STAR_POS.tr
 
 -- ==================== 音效 ====================
 local SOUND_FAVORITE = "dontstarve/HUD/click_move"
@@ -52,7 +92,6 @@ local function SavePersistentData(name, data)
 	GLOBAL.TheSim:SetPersistentString(name, tstring, false)
 end
 
--- 安全判断槽位属于哪个容器（"inv" / "overflow" / nil），整体 pcall 保护
 local function GetContainerType(widget)
 	if not widget then return nil end
 	local ok, result = pcall(function()
@@ -90,52 +129,21 @@ local function SlotIsBusy(t, slot, container_type)
 	return false
 end
 
--- 判断某个槽位是否已收藏（用于锁定判断）
-local function IsSlotFavorite(widget)
-	if not widget or not widget.tile or not widget.tile.item then return false end
-	local prefab = widget.tile.item.prefab
-	if not prefab then return false end
-	local ctype = GetContainerType(widget)
-	if not ctype then return false end
-	for _, v in pairs(FAVORITED_ITEMS) do
-		local vc = v.container or "inv"
-		if vc == ctype and v.slot == widget.num and v.item == prefab then
-			return true
-		end
-	end
-	return false
-end
-
--- 提示冷却，防止刷屏
-local last_lock_msg = 0
-local LOCK_MSG_COOLDOWN = 1.5
-
-local function SayLocked(widget)
-	local now = GLOBAL.GetTime and GLOBAL.GetTime() or 0
-	if now - last_lock_msg < LOCK_MSG_COOLDOWN then return end
-	last_lock_msg = now
-	pcall(function()
-		local name = widget.tile and widget.tile.item and widget.tile.item.name or ""
-		GLOBAL.ThePlayer.components.talker:Say(tostring(name) .. S.LOCKED)
-	end)
-	PlayFavSound(false)
-end
-
 
 AddClassPostConstruct("widgets/invslot", function(invslot)
-	-- ==================== 星标（黄色小图标） ====================
+	-- ==================== 星标 ====================
 	invslot.star = invslot:AddChild(require("widgets/image")("images/crafting_menu.xml", "favorite_checked.tex"))
-	invslot.star:SetScale(0.9, 0.9)
-	invslot.star:SetPosition(1, 40, 0)
+	invslot.star:SetScale(STAR_SIZE, STAR_SIZE)
+	invslot.star:SetTint(STAR_COLOR[1], STAR_COLOR[2], STAR_COLOR[3], STAR_COLOR[4])
+	invslot.star:SetPosition(star_pos[1], star_pos[2], 0)
 	invslot.star:Hide()
 
-	-- ==================== 黄色外圈边框 ====================
+	-- ==================== 边框 ====================
 	invslot.border = invslot:AddChild(require("widgets/image")("images/crafting_menu.xml", "slot_frame_highlight.tex"))
-	invslot.border:SetScale(0.62, 0.62)   -- 稍微放大，比槽位本身大一圈，更明显
-	invslot.border:SetTint(1, 0.85, 0.2, 1) -- 金黄色，醒目
+	invslot.border:SetScale(BORDER_SIZE, BORDER_SIZE)
+	invslot.border:SetTint(BORDER_COLOR[1], BORDER_COLOR[2], BORDER_COLOR[3], BORDER_ALPHA)
 	invslot.border:Hide()
 
-	-- 层级：bgimage 最底，border 在 bgimage 之上但物品图标之下，star 在物品之上
 	invslot.star:MoveToBack()
 	invslot.border:MoveToBack()
 	if invslot.bgimage then
@@ -166,7 +174,6 @@ AddClassPostConstruct("widgets/invslot", function(invslot)
 		if is_favorite then
 			self.star:Show()
 			self.border:Show()
-			-- 确保层级：星标在上，边框在物品图标下
 			self.border:MoveToBack()
 			if self.bgimage then
 				self.bgimage:MoveToBack()
@@ -178,28 +185,8 @@ AddClassPostConstruct("widgets/invslot", function(invslot)
 		end
 	end
 
-
 	local old_OnMouseButton = invslot.OnMouseButton
 	invslot.OnMouseButton = function(self, button, down, x, y)
-		-- ==================== 锁定：拦截左键拿起收藏物品 ====================
-		if button == GLOBAL.MOUSEBUTTON_LEFT and down then
-			if IsSlotFavorite(self) then
-				SayLocked(self)
-				return true  -- 直接吞掉，不传给原函数 → 无法拿起 → 无法丢弃/拖拽
-			end
-		end
-
-		-- ==================== 锁定：拦截 Ctrl+左键快速丢弃 ====================
-		-- （左键已被上面拦截，Ctrl+左键自然也不会触发丢弃，这里是双保险）
-		if button == GLOBAL.MOUSEBUTTON_LEFT and down
-			and GLOBAL.TheInput:IsControlPressed(GLOBAL.CONTROL_FORCE_TRADE) then
-			if IsSlotFavorite(self) then
-				SayLocked(self)
-				return true
-			end
-		end
-
-		-- ==================== 中键+Ctrl：收藏/取消 ====================
 		local success, result = GLOBAL.pcall(function()
 			if button == GLOBAL.MOUSEBUTTON_MIDDLE and down then
 				if GLOBAL.TheInput:IsControlPressed(GLOBAL.CONTROL_FORCE_TRADE) then
