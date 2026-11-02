@@ -73,6 +73,10 @@ local STAR_POS = {
 }
 local star_pos = STAR_POS[STAR_POS_KEY] or STAR_POS.tr
 
+-- ==================== 提示模式 / 隐藏星标 ====================
+local SHIFT_HINT_MODE = GetModConfigData("SHIFT_HINT") or "compact"
+local HIDE_STAR = GetModConfigData("HIDE_STAR") or false
+
 -- ==================== 音效 ====================
 local SOUND_FAVORITE = "dontstarve/HUD/click_move"
 local SOUND_REMOVE   = "dontstarve/HUD/click_negative"
@@ -137,12 +141,18 @@ AddClassPostConstruct("widgets/invslot", function(invslot)
 	invslot.star:SetTint(STAR_COLOR[1], STAR_COLOR[2], STAR_COLOR[3], STAR_COLOR[4])
 	invslot.star:SetPosition(star_pos[1], star_pos[2], 0)
 	invslot.star:Hide()
+	-- 隐藏星标模式下，彻底禁用鼠标交互，防止任何残留拦截
+	if HIDE_STAR then
+		pcall(function() invslot.star:SetClickable(false) end)
+	end
 
 	-- ==================== 边框 ====================
 	invslot.border = invslot:AddChild(require("widgets/image")("images/crafting_menu.xml", "slot_frame_highlight.tex"))
 	invslot.border:SetScale(BORDER_SIZE, BORDER_SIZE)
 	invslot.border:SetTint(BORDER_COLOR[1], BORDER_COLOR[2], BORDER_COLOR[3], BORDER_ALPHA)
 	invslot.border:Hide()
+	-- 边框也不应该拦截鼠标
+	pcall(function() invslot.border:SetClickable(false) end)
 
 	invslot.star:MoveToBack()
 	invslot.border:MoveToBack()
@@ -172,13 +182,17 @@ AddClassPostConstruct("widgets/invslot", function(invslot)
 		if not ok then is_favorite = false end
 
 		if is_favorite then
-			self.star:Show()
+			if not HIDE_STAR then
+				self.star:Show()
+				self.star:MoveToFront()
+			else
+				self.star:Hide()
+			end
 			self.border:Show()
 			self.border:MoveToBack()
 			if self.bgimage then
 				self.bgimage:MoveToBack()
 			end
-			self.star:MoveToFront()
 		else
 			self.star:Hide()
 			self.border:Hide()
@@ -254,9 +268,10 @@ AddClassPostConstruct("widgets/itemtile", function(self)
 	self.GetDescriptionString = function(self)
 		local success, str = GLOBAL.pcall(function()
 			local s = old_GetDescriptionString(self)
-			if GLOBAL.TheInput:IsControlPressed(GLOBAL.CONTROL_FORCE_TRADE) then
+			if SHIFT_HINT_MODE ~= "off" and GLOBAL.TheInput:IsControlPressed(GLOBAL.CONTROL_FORCE_TRADE) then
 				if self.parent and GetContainerType(self.parent) then
-					s = s .. "\n\238\132\130: " .. S.FAVORITE_HINT .. "\n\n "
+					-- 紧凑模式：只追加一行，避免把提示框抬高两行
+					s = s .. "\n\238\132\130: " .. S.FAVORITE_HINT
 				end
 			end
 			return s

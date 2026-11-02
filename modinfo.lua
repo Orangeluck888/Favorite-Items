@@ -126,4 +126,28 @@ configuration_options = {
         },
         default = "tr",
     },
+    {
+        name = "SHIFT_HINT",
+        label = is_chinese and "Shift 悬停提示" or "Shift Hover Hint",
+        hover = is_chinese
+            and "按住 Shift 悬停物品时是否显示「收藏」提示。紧凑模式只多一行，关闭后提示框与原版一致"
+            or "Whether to show the \"Favorite\" hint when hovering with Shift held. Compact adds only one line; Off restores vanilla tooltip height",
+        options = {
+            { description = is_chinese and "紧凑（默认）" or "Compact (default)", data = "compact" },
+            { description = is_chinese and "关闭" or "Off", data = "off" },
+        },
+        default = "compact",
+    },
+    {
+        name = "HIDE_STAR",
+        label = is_chinese and "隐藏星标（只留边框）" or "Hide Star (Border Only)",
+        hover = is_chinese
+            and "开启后收藏物品只显示边框，不显示星标。可避免星标遮挡鼠标悬停提示"
+            or "When enabled, favorited items show only the border without the star. Prevents the star from blocking mouse hover tooltips",
+        options = {
+            { description = is_chinese and "关闭" or "Off (default)", data = false },
+            { description = is_chinese and "开启（默认）" or "On", data = true },
+        },
+        default = true,
+    },
 }
