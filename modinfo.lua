@@ -150,4 +150,16 @@ configuration_options = {
         },
         default = true,
     },
+    {
+        name = "HIDE_BORDER",
+        label = is_chinese and "不显示边框" or "Hide Border",
+        hover = is_chinese
+            and "开启后收藏物品不再显示边框高亮（默认关闭）。可仅保留星标作为收藏标识"
+            or "When enabled, favorited items no longer show the border highlight (off by default). Only the star marks favorites",
+        options = {
+            { description = is_chinese and "关闭（默认）" or "Off (default)", data = false },
+            { description = is_chinese and "开启" or "On", data = true },
+        },
+        default = false,
+    },
 }

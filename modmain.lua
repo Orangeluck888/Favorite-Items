@@ -77,6 +77,9 @@ local star_pos = STAR_POS[STAR_POS_KEY] or STAR_POS.tr
 local SHIFT_HINT_MODE = GetModConfigData("SHIFT_HINT") or "compact"
 local HIDE_STAR = GetModConfigData("HIDE_STAR") or false
 
+-- ==================== 不显示边框（默认关闭）====================
+local HIDE_BORDER = GetModConfigData("HIDE_BORDER") or false
+
 -- ==================== 音效 ====================
 local SOUND_FAVORITE = "dontstarve/HUD/click_move"
 local SOUND_REMOVE   = "dontstarve/HUD/click_negative"
@@ -181,23 +184,29 @@ AddClassPostConstruct("widgets/invslot", function(invslot)
 		end)
 		if not ok then is_favorite = false end
 
-		if is_favorite then
-			if not HIDE_STAR then
-				self.star:Show()
-				self.star:MoveToFront()
-			else
-				self.star:Hide()
-			end
-			self.border:Show()
-			self.border:MoveToBack()
-			if self.bgimage then
-				self.bgimage:MoveToBack()
-			end
-		else
-			self.star:Hide()
-			self.border:Hide()
-		end
+        if is_favorite then
+            if not HIDE_STAR then
+                self.star:Show()
+                self.star:MoveToFront()
+            else
+                self.star:Hide()
+            end
+            -- 不显示边框模式下仅隐藏边框，不影响星标
+            if not HIDE_BORDER then
+                self.border:Show()
+                self.border:MoveToBack()
+                if self.bgimage then
+                    self.bgimage:MoveToBack()
+                end
+            else
+                self.border:Hide()
+            end
+        else
+            self.star:Hide()
+            self.border:Hide()
+        end
 	end
+
 
 	local old_OnMouseButton = invslot.OnMouseButton
 	invslot.OnMouseButton = function(self, button, down, x, y)
